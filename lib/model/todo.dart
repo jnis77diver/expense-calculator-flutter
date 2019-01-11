@@ -1,22 +1,25 @@
 class Todo {
-  int _id;
-  String _title;
+  String _id;
+  String _category;
   String _description;
-  String _date;
-  int _priority;
+  DateTime _date;
+  double _cost;
+  String _currency;
 
-  Todo(this._title, this._priority, this._date, [this._description]);
-  Todo.withId(this._id, this._title, this._priority, this._date,
+  Todo(this._category, this._cost, this._date, this._currency,
       [this._description]);
-  int get id => _id;
-  String get title => _title;
+  Todo.withId(this._id, this._category, this._cost, this._date, this._currency,
+      [this._description]);
+  String get id => _id;
+  String get category => _category;
   String get description => _description;
-  int get priority => _priority;
-  String get date => _date;
+  double get cost => _cost;
+  DateTime get date => _date;
+  String get currency => _currency;
 
-  set title(String newTitle) {
-    if (newTitle.length <= 255) {
-      _title = newTitle;
+  set category(String newCategory) {
+    if (newCategory.length <= 255) {
+      _category = newCategory;
     }
   }
 
@@ -26,33 +29,39 @@ class Todo {
     }
   }
 
-  set priority(int newPriority) {
-    if (newPriority > 0 && newPriority <= 3) {
-      _priority = newPriority;
+  set currency(String newCurrency) {
+    if (newCurrency.length <= 255) {
+      _currency = newCurrency;
     }
   }
 
-  set date(String newDate) {
+  set cost(double newCost) {
+    _cost = newCost;
+  }
+
+  set date(DateTime newDate) {
     _date = newDate;
   }
 
   Map<String, dynamic> toMap() {
     var map = Map<String, dynamic>();
-    map["title"] = _title;
+    map["category"] = _category;
     map["description"] = _description;
-    map["priority"] = _priority;
+    map["cost"] = _cost;
     map["date"] = _date;
+    map["currency"] = _currency;
     if (_id != null) {
       map["id"] = _id;
     }
     return map;
   }
 
-  Todo.fromObject(dynamic o) {
-    this._id = o["id"];
-    this._title = o["title"];
-    this._title = o["title"];
-    this._priority = o["priority"];
+  Todo.fromObject(dynamic o, [String id]) {
+    this._id = id;
+    this._category = o["category"];
+    this._description = o["description"];
+    this._cost = double.parse(o["cost"].toString());
     this._date = o["date"];
+    this._currency = o["currency"];
   }
 }

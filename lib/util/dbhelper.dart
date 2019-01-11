@@ -71,11 +71,10 @@ class DbHelper {
     return result; // if returns 0, something went wrong, otherwise will return the id of the record
   }
 
-  Future<int> deleteTodo(int id) async {
+  Future<int> deleteTodo(String id) async {
     int result;
     var db = await this.db;
     result = await db.rawDelete("DELETE FROM $tblTodo WHERE $colId = $id");
     return result;
   }
-
 }

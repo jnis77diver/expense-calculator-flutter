@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:todo_app/model/todo.dart';
 import 'package:todo_app/util/dbhelper.dart';
 import 'package:todo_app/screens/tododetail.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:todo_app/util/helpers.dart';
 
 class TodoList extends StatefulWidget {
   @override
@@ -23,7 +25,7 @@ class TodoListState extends State {
       body: todoListItems(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          navigateToDetail(Todo('', 3, ''));
+          navigateToDetail(Todo("", 0.00, new DateTime.now(), "COP", ""));
         },
         tooltip: "Add new Todo",
         child: new Icon(Icons.add),
@@ -31,27 +33,52 @@ class TodoListState extends State {
     );
   }
 
-  ListView todoListItems() {
-    return ListView.builder(
-      itemCount: count,
-      itemBuilder: (BuildContext context, int position) {
-        return Card(
-          color: Colors.white,
-          elevation: 2.0,
-          child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: getColor(this.todos[position].priority),
-                child: Text(this.todos[position].priority.toString()),
-              ),
-              title: Text(this.todos[position].title),
-              subtitle: Text(this.todos[position].date),
-              onTap: () {
-                debugPrint("Tapped on " + this.todos[position].id.toString());
-                navigateToDetail(this.todos[position]);
-              }),
-        );
-      },
-    );
+  // ListView todoListItems() {
+  StreamBuilder todoListItems() {
+    return StreamBuilder(
+        stream: Firestore.instance
+            .collection('expenses')
+            .orderBy("date", descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return const Text('Loading...');
+          return ListView.builder(
+            itemCount: snapshot.data.documents.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Card(
+                color: Colors.white,
+                elevation: 2.0,
+                child: ListTile(
+                    leading: CircleAvatar(
+                      //backgroundColor: getColor(this.todos[position].priority),
+                      backgroundColor: Colors.red,
+                      child: Text(snapshot.data.documents[index]['currency']),
+                    ),
+                    title: Text(snapshot.data.documents[index]['description']),
+                    subtitle: Text(snapshot.data.documents[index]['category']),
+                    trailing: Column(
+                      children: <Widget>[
+                        Text(
+                          currencyFormater
+                              .format(snapshot.data.documents[index]['cost']),
+                          style: TextStyle(
+                              fontSize: 16.0, fontWeight: FontWeight.bold),
+                        ),
+                        Text(dateFormatter
+                            .format(snapshot.data.documents[index]['date'])),
+                      ],
+                    ),
+                    onTap: () {
+                      debugPrint("Tapped on " +
+                          snapshot.data.documents[index].documentID);
+                      navigateToDetail(Todo.fromObject(
+                          snapshot.data.documents[index].data,
+                          snapshot.data.documents[index].documentID));
+                    }),
+              );
+            },
+          );
+        });
   }
 
   void getData() {
@@ -63,7 +90,7 @@ class TodoListState extends State {
         count = result.length;
         for (int i = 0; i < count; i++) {
           todoList.add(Todo.fromObject(result[i]));
-          debugPrint(todoList[i].title);
+          //debugPrint(todoList[i].title);
         }
         setState(() {
           todos = todoList;
